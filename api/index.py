@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
@@ -7,49 +6,42 @@ from pathlib import Path
 
 app = FastAPI()
 
-# Enable CORS for all origins
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["POST"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
-# Load the dataset once when the app starts
+# Load the telemetry data
 DATA_FILE = Path(__file__).parent / "q-vercel-latency.json"
 df = pd.read_json(DATA_FILE)
 
 @app.get("/")
 async def root():
-    return {"message": "Vercel Latency Analytics API is running."}
+    return {"message": "Vercel Latency API is running."}
 
-@app.post("/analyze")  # fixed endpoint
-async def get_latency_stats(request: Request):
+@app.post("/analyze")
+async def analyze(request: Request):
     payload = await request.json()
-    regions_to_process = payload.get("regions", [])
-    threshold = payload.get("threshold_ms", 200)
+    regions = payload.get("regions", [])
+    threshold = payload.get("threshold_ms", 180)
 
     results = []
-
-    for region in regions_to_process:
+    for region in regions:
         region_df = df[df["region"] == region]
-
         if not region_df.empty:
             avg_latency = round(region_df["latency"].mean(), 2)
             p95_latency = round(np.percentile(region_df["latency"], 95), 2)
             avg_uptime = round(region_df["uptime_pct"].mean(), 3)
             breaches = int(region_df[region_df["latency"] > threshold].shape[0])
-
-            results.append(
-                {
-                    "region": region,
-                    "avg_latency": avg_latency,
-                    "p95_latency": p95_latency,
-                    "avg_uptime": avg_uptime,
-                    "breaches": breaches,
-                }
-            )
-
+            results.append({
+                "region": region,
+                "avg_latency": avg_latency,
+                "p95_latency": p95_latency,
+                "avg_uptime": avg_uptime,
+                "breaches": breaches
+            })
     return {"regions": results}
