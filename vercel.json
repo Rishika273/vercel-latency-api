@@ -8,9 +8,13 @@
   ],
   "routes": [
     {
+      "src": "/analyze",
+      "methods": ["POST"],
+      "dest": "api/index.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "api/index.py"
     }
   ]
 }
-
