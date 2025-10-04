@@ -33,10 +33,10 @@ async def analyze(request: Request):
     for region in regions:
         region_df = df[df["region"] == region]
         if not region_df.empty:
-            avg_latency = round(region_df["latency"].mean(), 2)
-            p95_latency = round(np.percentile(region_df["latency"], 95), 2)
+            avg_latency = round(region_df["latency_ms"].mean(), 2)
+            p95_latency = round(np.percentile(region_df["latency_ms"], 95), 2)
             avg_uptime = round(region_df["uptime_pct"].mean(), 3)
-            breaches = int(region_df[region_df["latency"] > threshold].shape[0])
+            breaches = int(region_df[region_df["latency_ms"] > threshold].shape[0])
             results.append({
                 "region": region,
                 "avg_latency": avg_latency,
