@@ -23,7 +23,7 @@ df = pd.read_json(DATA_FILE)
 async def root():
     return {"message": "Vercel Latency API is running."}
 
-@app.post("/analyze")
+@app.post("/")
 async def analyze(request: Request):
     payload = await request.json()
     regions = payload.get("regions", [])
