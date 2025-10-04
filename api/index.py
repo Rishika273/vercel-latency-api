@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
@@ -17,16 +18,14 @@ app.add_middleware(
 )
 
 # Load the dataset once when the app starts
-DATA_FILE = Path(_file_).parent / "q-vercel-latency.json"
+DATA_FILE = Path(__file__).parent / "q-vercel-latency.json"
 df = pd.read_json(DATA_FILE)
-
 
 @app.get("/")
 async def root():
     return {"message": "Vercel Latency Analytics API is running."}
 
-
-@app.post("/")  # Changed from /api/ to / to match the expected endpoint
+@app.post("/analyze")  # fixed endpoint
 async def get_latency_stats(request: Request):
     payload = await request.json()
     regions_to_process = payload.get("regions", [])
@@ -38,10 +37,10 @@ async def get_latency_stats(request: Request):
         region_df = df[df["region"] == region]
 
         if not region_df.empty:
-            avg_latency = round(region_df["latency_ms"].mean(), 2)
-            p95_latency = round(np.percentile(region_df["latency_ms"], 95), 2)
+            avg_latency = round(region_df["latency"].mean(), 2)
+            p95_latency = round(np.percentile(region_df["latency"], 95), 2)
             avg_uptime = round(region_df["uptime_pct"].mean(), 3)
-            breaches = int(region_df[region_df["latency_ms"] > threshold].shape[0])
+            breaches = int(region_df[region_df["latency"] > threshold].shape[0])
 
             results.append(
                 {
