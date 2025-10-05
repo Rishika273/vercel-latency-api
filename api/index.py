@@ -13,6 +13,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["POST"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Load the telemetry data
